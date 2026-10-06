@@ -42,7 +42,7 @@ struct RedBlackTreeNode *insertNode(struct RedBlackTreeNode *node, struct RedBla
 }
 
 
-static struct RedBlackTreeNode *right_rotate(struct RedBlackTreeNode *node, struct RedBlackTreeNode *root){
+static struct RedBlackTreeNode *left_rotate(struct RedBlackTreeNode *node, struct RedBlackTreeNode *root){
     struct RedBlackTreeNode *parent_node = node->parent;
     struct RedBlackTreeNode *grand_parent_node = parent_node->parent;
 
@@ -56,6 +56,7 @@ static struct RedBlackTreeNode *right_rotate(struct RedBlackTreeNode *node, stru
 
     struct RedBlackTreeNode *parent_left_child = parent_node->left_child;
     parent_node->left_child = grand_parent_node;
+    parent_node->parent = great_grand_parent_node;
     grand_parent_node->parent = parent_node;
     grand_parent_node->right_child = parent_left_child;
     if (parent_left_child != NULL)
@@ -67,7 +68,7 @@ static struct RedBlackTreeNode *right_rotate(struct RedBlackTreeNode *node, stru
     return root;
 }
 
-static struct RedBlackTreeNode *left_rotate(struct RedBlackTreeNode *node, struct RedBlackTreeNode *root){
+static struct RedBlackTreeNode *right_rotate(struct RedBlackTreeNode *node, struct RedBlackTreeNode *root){
     struct RedBlackTreeNode *parent_node = node->parent;
     struct RedBlackTreeNode *grand_parent_node = parent_node->parent;
 
@@ -81,6 +82,7 @@ static struct RedBlackTreeNode *left_rotate(struct RedBlackTreeNode *node, struc
 
     struct RedBlackTreeNode *parent_right_child = parent_node->right_child;
     parent_node->right_child = grand_parent_node;
+    parent_node->parent = great_grand_parent_node;
     grand_parent_node->parent = parent_node;
     grand_parent_node->left_child = parent_right_child;
     if (parent_right_child != NULL)
@@ -118,14 +120,18 @@ static struct RedBlackTreeNode *resolveConflicts(struct RedBlackTreeNode *node, 
         }
     } else {
         if (grandparent_node->right_child == parent_node && parent_node->right_child == node){
-            grandparent_node->color = RED;
-            parent_node->color = BLACK;
-            root = right_rotate(node, root);
+            root = left_rotate(node, root);
         } else if (grandparent_node->left_child == parent_node && parent_node->left_child == node){
-            grandparent_node->color = RED;
-            parent_node->color = BLACK;
             root = right_rotate(node, root);
+        } else if (grandparent_node->left_child == parent_node && parent_node->right_child == node){
+            root = left_rotate(node, root);
+            root = right_rotate(node, root);
+        } else {
+            root = right_rotate(node, root);
+            root = left_rotate(node, root);
         }
+        grandparent_node->color = RED;
+        parent_node->color = BLACK;
     }
     return root;
 }
